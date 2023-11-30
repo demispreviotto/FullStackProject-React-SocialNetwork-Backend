@@ -30,10 +30,19 @@ const UserController = {
       await transporter.sendMail({
         to: req.body.email,
         subject: "Please, confirm your email.",
-        html: `<h3>Welcome!</h3>
-        <a href="${url}"> Please, click to confirm it your email</a>
-        `,
+        html: `<body style="max-width: 1280px; margin: 0 auto; padding: 2rem; text-align: center; color: rgba(255, 255, 255, 0.87); background-color: #242424;">
+    <div>
+        <h1 style="font-size: 3.2em; line-height: 1.1; color: #646cff;">Hi there, welcome!!</h1>
+        <p style="color: rgba(255, 255, 255, 0.87);">Lorem ipsum dolor sit amet consectetur adipisicing elit. Dicta consequuntur necessitatibus obcaecati, eius fuga nostrum enim illum, esse maxime rem vero dignissimos natus atque quod iure, doloribus illo sequi commodi.</p>
+        <p style="color: #535bf2;">Please click <a href="${url}" style="color: #535bf2;">here</a> to confirm.</p>
+        <p style="color: rgba(255, 255, 255, 0.87);">If you didn't register with us, ignore this email. The link will lose effect after 48 hours, and the data will be deleted from our servers.</p>
+    </div>
+</body>`,
       });
+      // const token = jwt.sign({ _id: user._id }, jwt_secret);
+      // user.tokens.push(token);
+      // await user.save();
+      // res.status(201).send({ msg: "User created successfully.", loggedUser: user, token });
       res.status(201).send({ msg: "User created successfully.", user });
     } catch (error) {
       next(error);
@@ -44,13 +53,16 @@ const UserController = {
     try {
       const token = req.params.emailToken;
       const payload = jwt.verify(token, jwt_secret);
-      await User.findOneAndUpdate(
+      const user = await User.findOneAndUpdate(
         { email: payload.email },
-        { confirmed: true }
+        { confirmed: true },
+        { new: true },
       );
+      if (!user) { return res.status(400).send({ error: 'Invalid or expired confirmation' }) }
       res.status(201).send("User confirmed successfully!");
     } catch (error) {
       console.error(error);
+      res.status(500).send("Error confirming email");
     }
   },
 
@@ -74,7 +86,7 @@ const UserController = {
       if (user.tokens.length > 4) user.tokens.shift();
       user.tokens.push(token);
       await user.save();
-      return res.status(200).send({ msg: `Welcome ${user.username}`, token });
+      return res.status(200).send({ msg: `Welcome ${user.username}`, token, user });
     } catch (error) {
       console.log(error);
       res
@@ -119,12 +131,12 @@ const UserController = {
 
   async getLoggedUser(req, res) {
     try {
-      const loggedUser = await User.findById({ _id: req.user._id });
-      const numOfFollowing = loggedUser.following.length;
-      const numOfFollowers = loggedUser.followers.length;
-      const numOfPosts = loggedUser.postIds.length;
+      const user = await User.findById({ _id: req.user._id }).populate('postIds')
+      const numOfFollowing = user.following.length;
+      const numOfFollowers = user.followers.length;
+      const numOfPosts = user.postIds.length;
       const loggedUserInfo = {
-        loggedUser,
+        user,
         numOfFollowers,
         numOfFollowing,
         numOfPosts,

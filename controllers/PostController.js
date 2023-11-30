@@ -8,7 +8,7 @@ const PostController = {
       const post = await Post.create({
         ...req.body,
         userId: req.user._id,
-        image: req.file.filename,
+        // image: req.file.filename,
       });
       await User.findByIdAndUpdate(
         req.user._id,
@@ -71,7 +71,13 @@ const PostController = {
 
   async getById(req, res) {
     try {
-      const post = await Post.findById(req.params._id);
+      const post = await Post.findById(req.params._id).populate('userId').populate({
+        path: "commentIds",
+        populate: {
+          path: "userId",
+          select: "username",
+        },
+      })
       res.send(post);
     } catch (error) {
       console.error(error);

@@ -8,9 +8,12 @@ const {
   isSuperAdmin,
   isPostAuthor,
 } = require("../middleware/authentication");
-const upload = require("../middleware/upload");
+// const upload = require("../middleware/upload");
 
-router.post("/", authentication, upload.single("image"), PostController.create);
+router.post("/",
+  authentication,
+  // upload.single("image"),
+  PostController.create);
 router.put("/:_id", authentication, isPostAuthor, PostController.update);
 router.delete("/:_id", authentication, isPostAuthor, PostController.delete);
 router.get("/", PostController.getAll);

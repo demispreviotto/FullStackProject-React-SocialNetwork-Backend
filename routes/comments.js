@@ -7,12 +7,12 @@ const {
   isSuperAdmin,
   isCommentAuthor,
 } = require("../middleware/authentication");
-const upload = require("../middleware/upload");
+// const upload = require("../middleware/upload");
 
 router.post(
   "/:_id",
   authentication,
-  upload.single("image"),
+  // upload.single("image"),
   CommentController.create
 );
 router.delete(
