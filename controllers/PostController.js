@@ -47,7 +47,7 @@ const PostController = {
 
   async getAll(req, res, next) {
     try {
-      const { page = 1, limit = 10 } = req.query;
+      const { page = 1, limit = 30 } = req.query;
       const posts = await Post.find({})
         .populate({
           path: "userId",
